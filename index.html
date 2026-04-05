@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="zh-TW" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生物分類配對練習</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet">
+  <style>
+* { font-family: 'Noto Sans TC', sans-serif; }
+html, body { height: 100%; margin: 0; }
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+.pop-in { animation: popIn 0.5s ease forwards; }
+.pop-in { animation: none; opacity: 1; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+.shake { animation: shake 0.4s ease; }
+.btn-choice { transition: all 0.15s ease; }
+.btn-choice:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-choice:active { transform: translateY(0); }
+.result-overlay { pointer-events: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 50; }
+.result-symbol { font-size: 200px; font-weight: 900; opacity: 0.15; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-[#0f0a1e] text-[#e8e0f0] overflow-auto">
+  <div id="app" class="w-full h-full flex flex-col">
+   <div id="screen-home" class="flex-1 overflow-auto flex flex-col items-center justify-center p-6">
+    <div class="w-full max-w-lg fade-in">
+     <div class="text-center mb-8">
+      <div class="inline-block p-4 rounded-2xl bg-gradient-to-br from-purple-600/30 to-indigo-600/30 mb-4"><span class="text-5xl">🧬</span>
+      </div>
+      <h1 id="main-title" class="text-3xl font-bold bg-gradient-to-r from-purple-300 to-indigo-300 bg-clip-text text-transparent">生物分類配對練習</h1>
+      <p class="text-[#a78bbd] mt-2 text-sm" id="progress-text">載入中...</p>
+     </div>
+     <div class="space-y-3">
+      <div class="bg-[#1a1230] rounded-2xl p-5 border border-purple-900/40">
+       <div class="flex items-center justify-between mb-3"><span class="font-semibold text-purple-200">開始練習</span> <span id="remaining-count" class="text-xs bg-purple-900/50 px-2 py-1 rounded-full text-purple-300"></span>
+       </div>
+       <div class="flex items-center gap-3 mb-3"><label class="text-sm text-[#a78bbd]">題數：</label> <input id="input-count" type="number" min="1" value="10" class="w-20 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-center text-sm focus:outline-none focus:border-purple-500"> <span class="text-xs text-[#a78bbd]">/ <span id="max-count">136</span></span>
+       </div><label class="flex items-center gap-2 text-sm text-[#a78bbd] mb-3 cursor-pointer select-none"> <input id="check-exclude" type="checkbox" checked class="accent-purple-500 w-4 h-4 rounded"> 排除已練習過的題目 </label> <button onclick="toggleNewPracticeFilter()" class="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 mb-3"> <i data-lucide="chevron-down" class="w-3 h-3" id="filter-toggle-icon"></i> 篩選條件 </button> <div id="new-practice-filter" class="hidden space-y-3 mb-4 pb-4 border-t border-purple-900/30 pt-3">
+        <div>
+         <label class="text-xs text-[#a78bbd] block mb-2">指定分類界：</label> <select id="filter-kingdom" onchange="updateFilterCount()" class="w-full bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 text-white"> <option value="">全部界</option> <option value="原核生物界">原核生物界</option> <option value="原生生物界">原生生物界</option> <option value="真菌界">真菌界</option> <option value="植物界">植物界</option> <option value="動物界">動物界</option> </select>
+        </div>
+        <div>
+         <label class="text-xs text-[#a78bbd] block mb-2">包含名字關鍵字：</label>
+         <div class="flex gap-2">
+          <input id="filter-keyword" type="text" placeholder="輸入關鍵字" oninput="updateFilterCount()" class="flex-1 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 text-white"> <button onclick="quickAddKeyword('菌')" class="px-2 py-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-xs text-purple-300">菌</button> <button onclick="quickAddKeyword('藻')" class="px-2 py-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-xs text-purple-300">藻</button>
+         </div>
+        </div>
+       </div><button onclick="startPractice('new')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-sm hover:from-purple-500 hover:to-indigo-500 transition-all"> 開始練習 </button>
+      </div><div class="grid grid-cols-2 gap-3">
+       <button onclick="showWrongBook()" class="bg-[#1a1230] rounded-2xl p-4 border border-purple-900/40 text-left hover:bg-[#1e1538] transition-all">
+        <div class="text-2xl mb-1">
+         📕
+        </div>
+        <div class="font-semibold text-sm text-purple-200">
+         錯題本
+        </div>
+        <div class="text-xs text-[#a78bbd] mt-1" id="wrong-count-label">
+         0 題
+        </div></button> <button onclick="showHistory()" class="bg-[#1a1230] rounded-2xl p-4 border border-purple-900/40 text-left hover:bg-[#1e1538] transition-all">
+        <div class="text-2xl mb-1">
+         📊
+        </div>
+        <div class="font-semibold text-sm text-purple-200">
+         練習紀錄
+        </div>
+        <div class="text-xs text-[#a78bbd] mt-1" id="history-count-label">
+         0 題已練
+        </div></button>
+      </div>
+     </div>
+    </div>
+   </div><div id="screen-quiz" class="hidden flex-1 overflow-auto flex flex-col items-center p-6">
+    <div class="w-full max-w-lg flex-1 fade-in">
+     <div class="flex items-center justify-between mb-4"><button onclick="confirmQuit()" class="text-[#a78bbd] hover:text-white text-sm flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i>返回</button> <span id="quiz-progress" class="text-sm text-purple-300 font-semibold"></span> <span id="quiz-score" class="text-sm text-[#a78bbd]"></span>
+     </div><div class="w-full h-1.5 bg-[#1a1230] rounded-full mb-6 overflow-hidden">
+      <div id="progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-300" style="width:0%"></div>
+     </div>
+     <div id="quiz-organism" class="text-center mb-6"><span class="text-xs text-[#a78bbd] uppercase tracking-widest">請分類此生物</span>
+      <div class="text-2xl font-bold mt-2 text-white" id="organism-name"></div>
+     </div>
+     <div id="step-label" class="text-sm text-purple-300 font-semibold mb-2 text-center"></div>
+     <div id="choices-container" class="flex flex-wrap justify-center gap-2 mb-4"></div><div id="path-display" class="mt-4 mb-12">
+      <div class="bg-[#1a1230] rounded-xl p-4 border border-purple-900/40">
+       <div class="text-xs text-[#a78bbd] mb-2">
+        你的選擇路徑：
+       </div>
+       <div id="path-chain" class="flex flex-wrap items-center gap-1 text-sm font-semibold text-purple-200 min-h-6"></div>
+       <div id="confirm-buttons" class="hidden flex gap-2 mt-4"><button onclick="confirmAnswer()" class="flex-1 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 font-semibold text-sm hover:from-green-500 hover:to-emerald-500 transition-all">確認作答</button> <button onclick="resetSelection()" class="flex-1 py-2 rounded-xl bg-[#2a1f40] font-semibold text-sm hover:bg-[#352a50] transition-all border border-purple-800/40">重新選擇</button>
+       </div>
+      </div>
+     </div><div id="result-display" class="hidden mt-4 mb-12">
+      <div id="result-box" class="bg-[#1a1230] rounded-xl p-4 border border-purple-900/40">
+       <div id="result-text" class="text-center font-bold text-lg mb-2"></div>
+       <div id="correct-path-box" class="hidden">
+        <div class="text-xs text-[#a78bbd] mb-1">
+         正確答案：
+        </div>
+        <div id="correct-path-chain" class="flex flex-wrap items-center gap-1 text-sm font-semibold text-green-300"></div>
+       </div>
+      </div>
+     </div><div id="quit-confirm" class="hidden mt-4 mb-12">
+      <div class="bg-[#1a1230] rounded-xl p-4 border border-red-900/40 text-center">
+       <p class="text-sm text-[#a78bbd] mb-3">確定要離開嗎？目前進度將結束。</p>
+       <div class="flex gap-2"><button onclick="goHome()" class="flex-1 py-2 rounded-xl bg-red-600/80 font-semibold text-sm hover:bg-red-500 transition-all">離開</button> <button onclick="cancelQuit()" class="flex-1 py-2 rounded-xl bg-[#2a1f40] font-semibold text-sm hover:bg-[#352a50] transition-all border border-purple-800/40">繼續</button>
+       </div>
+      </div>
+     </div>
+    </div><div id="quiz-buttons-sticky" class="w-full bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
+     <div class="w-full max-w-lg space-y-2">
+      <button onclick="nextQuestion()" id="btn-next" class="w-full py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-sm hover:from-purple-500 hover:to-indigo-500 transition-all hidden">下一題</button> <button onclick="resetSelection()" id="reset-button-sticky" class="w-full py-2.5 rounded-xl bg-[#2a1f40] font-semibold text-sm hover:bg-[#352a50] transition-all border border-purple-800/40">重新選擇</button>
+     </div>
+    </div>
+   </div><div id="screen-result" class="hidden flex-1 overflow-auto flex flex-col">
+    <div class="flex-1 overflow-auto flex flex-col items-center p-6">
+     <div class="w-full max-w-lg fade-in">
+      <div class="text-center mb-6">
+       <div class="text-5xl mb-3" id="result-emoji"></div>
+       <h2 class="text-2xl font-bold text-white" id="result-title"></h2>
+       <p class="text-purple-300 mt-1" id="result-summary"></p>
+      </div>
+      <div id="wrong-list-result" class="space-y-2 mb-6"></div>
+     </div>
+    </div>
+    <div class="w-full bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
+     <div class="w-full max-w-lg">
+      <button onclick="goHome()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold hover:from-purple-500 hover:to-indigo-500 transition-all">回到主頁</button>
+     </div>
+    </div>
+   </div><div id="screen-wrong" class="hidden flex-1 overflow-auto flex flex-col">
+    <div class="flex-1 overflow-auto flex flex-col items-center p-6">
+     <div class="w-full max-w-lg fade-in">
+      <div class="flex items-center mb-4"><button onclick="goHome()" class="text-[#a78bbd] hover:text-white text-sm flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i>返回</button>
+       <h2 class="flex-1 text-center font-bold text-lg text-purple-200">📕 錯題本</h2>
+       <div class="w-12"></div>
+      </div>
+      <div id="wrong-book-list" class="space-y-2 mb-4"></div>
+      <div id="wrong-count-section" class="hidden mt-4 bg-[#1a1230] rounded-xl p-4 border border-purple-900/40">
+       <div class="flex items-center gap-3"><label class="text-sm text-[#a78bbd]">題數：</label> <input id="wrong-count-input" type="number" min="1" value="5" class="w-20 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-center text-sm focus:outline-none focus:border-purple-500"> <span class="text-xs text-[#a78bbd]">/ <span id="wrong-max">0</span></span>
+       </div>
+      </div>
+      <div id="wrong-empty" class="text-center text-[#a78bbd] py-10 hidden">
+       <div class="text-4xl mb-2">
+        🎉
+       </div>
+       <p>沒有錯題！繼續保持！</p>
+      </div>
+     </div>
+    </div>
+    <div id="wrong-practice-sticky" class="hidden w-full bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
+     <div class="w-full max-w-lg space-y-2">
+      <div class="flex items-center gap-3"><label class="text-sm text-[#a78bbd]">題數：</label> <input id="wrong-count-input-sticky" type="number" min="1" value="5" class="w-20 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-center text-sm focus:outline-none focus:border-purple-500"> <span class="text-xs text-[#a78bbd]">/ <span id="wrong-max-sticky">0</span></span>
+      </div><button onclick="startPractice('wrong')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 font-semibold text-sm hover:from-red-500 hover:to-pink-500 transition-all">開始錯題練習 <span id="wrong-sticky-count">(5)</span></button>
+     </div>
+    </div>
+   </div><div id="screen-history" class="hidden flex-1 overflow-auto flex flex-col">
+    <div class="flex-1 overflow-auto flex flex-col items-center p-6">
+     <div class="w-full max-w-lg fade-in">
+      <div class="flex items-center mb-4"><button onclick="goHome()" class="text-[#a78bbd] hover:text-white text-sm flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i>返回</button>
+       <h2 class="flex-1 text-center font-bold text-lg text-purple-200">📊 練習紀錄</h2> <button onclick="clearAllData()" class="text-xs text-red-400 border border-red-900/40 px-2 py-1 rounded hover:bg-red-900/20 transition-colors shrink-0"> 🗑️ 刪除所有紀錄 </button>
+      </div>
+      <div id="history-list" class="space-y-2 mb-4"></div>
+      <div id="history-empty" class="text-center text-[#a78bbd] py-10 hidden">
+       <div class="text-4xl mb-2">
+        📝
+       </div>
+       <p>尚未練習過任何題目</p>
+      </div>
+     </div>
+    </div>
+    <div id="history-practice-sticky" class="hidden w-full bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
+     <div class="w-full max-w-lg space-y-3">
+      <div class="space-y-2 pb-3 border-b border-purple-900/30">
+       <div class="text-xs text-purple-400 font-semibold mb-2">
+        篩選條件
+       </div>
+       <div class="flex gap-2 text-xs">
+        <input id="history-filter-rate" type="number" min="0" max="100" placeholder="答對率低於 %" class="w-28 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> <input id="history-filter-times" type="number" min="1" placeholder="練習次數≤" class="w-24 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> <button onclick="applyHistoryFilter()" class="flex-1 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-purple-300 font-semibold">應用</button>
+       </div>
+       <div class="flex gap-2 text-xs">
+        <button onclick="historySelectAll()" class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">全選</button> <button onclick="historyClearAll()" class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">取消全選</button>
+       </div>
+      </div><button onclick="startPractice('history')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-sm hover:from-purple-500 hover:to-indigo-500 transition-all">練習選取的題目 <span id="history-sticky-count">(0)</span></button>
+     </div>
+    </div>
+   </div><div id="result-overlay" class="result-overlay hidden">
+    <div id="result-symbol" class="result-symbol pop-in"></div>
+   </div>
+  </div>
+  <script>
+// ============ DATA ============
+const TAXONOMY = {
+  "原核生物界": {
+    "細菌": ["肺炎鏈球菌","金黃色葡萄球菌","乳酸桿菌","大腸桿菌","結核桿菌","傷寒桿菌","霍亂弧菌","鉤端螺旋菌","根瘤菌"],
+    "藍綠菌": ["念珠藻","顫藻","鞘絲藻","色球藻","藍球藻","藍鼓藻","螺旋藻","藍綠藻"]
+  },
+  "原生生物界": {
+    "藻類": ["矽藻","新月藻","單胞藻","水綿","石蓴","巨藻","昆布","海帶","馬尾藻","紫菜","石花菜"],
+    "原生菌類": ["黏菌"],
+    "原生動物": ["草履蟲","變形蟲","綠眼蟲","瘧原蟲","推體蟲","眼蟲"]
+  },
+  "真菌界": {
+    "黴菌": ["青黴菌","黑黴菌","香港腳","灰指甲"],
+    "蕈類": ["香菇","竹蓀","木耳","靈芝","冬蟲夏草"]
+  },
+  "植物界": {
+    "蘚苔植物": ["地錢","土馬騌"],
+    "蕨類植物": ["筆筒樹","山蘇","台灣水韭","腎蕨","鐵線蕨","過溝菜蕨"],
+    "裸子植物": ["松","杉","柏","紅檜","蘇鐵","銀杏"],
+    "被子植物": {
+      "單子葉": ["水稻","小麥","玉米","甘蔗","竹子","椰子樹","百合","蘭花","蔥"],
+      "雙子葉": ["榕樹","菩提","朱槿","草莓","芥菜","落地生根","杜鵑","天竺葵","油桐","梅花","櫻花","牽牛花"]
+    }
+  },
+  "動物界": {
+    "無脊索動物": {
+      "刺絲胞動物門": ["珊瑚","海葵","水母","水螅"],
+      "扁形動物門": ["渦蟲","吸蟲","絛蟲"],
+      "軟體動物門": {
+        "斧足綱": ["文蛤","牡蠣"],
+        "腹足綱": ["蝸牛","蛞蝓"],
+        "頭足綱": ["烏賊","章魚","鸚鵡螺"]
+      },
+      "環節動物門": ["水蛭","蚯蚓","沙蠶"],
+      "節肢動物門": {
+        "甲殼綱": ["蝦子","螃蟹"],
+        "蛛形綱": ["蜘蛛","蠍子","塵蟎"],
+        "昆蟲綱": ["蝴蝶","蜻蜓","蚊子","蒼蠅","跳蚤","衣魚"],
+        "多足類": ["蜈蚣","馬陸"]
+      },
+      "棘皮動物門": ["海星","海參","海膽","陽燧足","海百合"]
+    },
+    "脊索動物": {
+      "魚類": ["鯊魚","海馬"],
+      "兩生類": ["山椒魚","青蛙","蟾蜍"],
+      "爬蟲類": ["蛇","蜥蜴","龜","鱷魚","壁虎"],
+      "鳥類": ["企鵝","鴕鳥","白頭翁","貓頭鷹","鴿子"],
+      "哺乳類": ["鴨嘴獸","袋鼠","鯨魚","海豚","蝙蝠","人類"]
+    }
+  }
+};
+
+// Build organism list with their correct paths
+const ALL_ORGANISMS = [];
+function buildOrganisms(obj, path) {
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (Array.isArray(val)) {
+      if (val.length === 0) {
+        // e.g. 酵母菌 - the key itself is the organism
+        ALL_ORGANISMS.push({ name: key, path: [...path, key] });
+      } else {
+        for (const org of val) {
+          ALL_ORGANISMS.push({ name: org, path: [...path, key] });
+        }
+      }
+    } else {
+      buildOrganisms(val, [...path, key]);
+    }
+  }
+}
+buildOrganisms(TAXONOMY, []);
+
+// Add 酵母菌 as a special organism (only needs kingdom selection)
+ALL_ORGANISMS.push({ name: '酵母菌', path: ['真菌界'] });
+
+// ============ STATE ============
+let practiceData = []; // array of { organism, times_practiced, times_wrong, is_wrong, last_practiced }
+let currentQuiz = []; // array of organism objects for current quiz
+let currentIndex = 0;
+let correctCount = 0;
+let wrongThisSession = [];
+let selectedPath = [];
+let quizMode = ''; // 'new', 'wrong', 'history'
+let historySelected = new Set();
+let quizFinished = false;
+let isAnswering = false; // Prevent multiple submissions
+
+// ============ LOCALSTORAGE ============
+function loadData() {
+  const stored = localStorage.getItem('bio-practice-data');
+  practiceData = stored ? JSON.parse(stored) : [];
+}
+
+function saveData() {
+  localStorage.setItem('bio-practice-data', JSON.stringify(practiceData));
+}
+
+function getRecord(orgName) {
+  return practiceData.find(r => r.organism === orgName);
+}
+
+loadData();
+
+function updateHomeStats() {
+  const practiced = practiceData.filter(r => r.times_practiced > 0);
+  const wrongOnes = practiceData.filter(r => r.is_wrong);
+  const remaining = ALL_ORGANISMS.length - practiced.length;
+  const el = (id) => document.getElementById(id);
+  if (el('progress-text')) el('progress-text').textContent = `共 ${ALL_ORGANISMS.length} 種生物 · 已練習 ${practiced.length} 題`;
+  if (el('remaining-count')) el('remaining-count').textContent = `剩餘 ${remaining} 題未練`;
+  if (el('wrong-count-label')) el('wrong-count-label').textContent = `${wrongOnes.length} 題`;
+  if (el('history-count-label')) el('history-count-label').textContent = `${practiced.length} 題已練`;
+
+  // 觸發更新篩選條件後的總題數 (更新 max-count)
+  updateFilterCount();
+}
+
+document.getElementById('check-exclude')?.addEventListener('change', updateHomeStats);
+
+// ============ SCREENS ============
+function showScreen(id) {
+  ['screen-home','screen-quiz','screen-result','screen-wrong','screen-history'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+  const app = document.getElementById('app');
+  if (app) app.scrollTop = 0;
+  if (id === 'screen-home') updateHomeStats();
+}
+
+function toggleNewPracticeFilter() {
+  const filter = document.getElementById('new-practice-filter');
+  const icon = document.getElementById('filter-toggle-icon');
+  filter.classList.toggle('hidden');
+  icon.style.transform = filter.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+  if (!filter.classList.contains('hidden')) {
+    updateFilterCount();
+  }
+}
+
+function quickAddKeyword(keyword) {
+  const input = document.getElementById('filter-keyword');
+  input.value = keyword;
+  updateFilterCount();
+}
+
+function goHome() {
+  quizFinished = false;
+  showScreen('screen-home');
+}
+
+function updateFilterCount() {
+  const filterKingdom = document.getElementById('filter-kingdom').value;
+  const filterKeyword = document.getElementById('filter-keyword').value.trim();
+  const exclude = document.getElementById('check-exclude')?.checked;
+  
+  let candidates = [...ALL_ORGANISMS];
+  
+  // Filter by kingdom
+  if (filterKingdom) {
+    candidates = candidates.filter(o => o.path[0] === filterKingdom);
+  }
+  
+  // Filter by keyword
+  if (filterKeyword) {
+    candidates = candidates.filter(o => o.name.includes(filterKeyword));
+  }
+  
+  // Filter by Exclude practiced (排除已練習)
+  if (exclude) {
+    const practicedNames = new Set(practiceData.filter(r => r.times_practiced > 0).map(r => r.organism));
+    candidates = candidates.filter(o => !practicedNames.has(o.name));
+  }
+  
+  const count = candidates.length;
+  // 直接將符合條件的題數更新到輸入框後方的 max-count
+  if (document.getElementById('max-count')) {
+    document.getElementById('max-count').textContent = count;
+  }
+}
+
+// ============ START PRACTICE ============
+function startPractice(mode) {
+  quizMode = mode;
+  wrongThisSession = [];
+  correctCount = 0;
+  currentIndex = 0;
+  quizFinished = false;
+
+  let pool = [];
+  if (mode === 'new') {
+    const exclude = document.getElementById('check-exclude').checked;
+    const count = parseInt(document.getElementById('input-count').value) || 10;
+    const filterKingdom = document.getElementById('filter-kingdom').value;
+    const filterKeyword = document.getElementById('filter-keyword').value.trim();
+    
+    let candidates = [...ALL_ORGANISMS];
+    
+    // Filter by kingdom
+    if (filterKingdom) {
+      candidates = candidates.filter(o => o.path[0] === filterKingdom);
+    }
+    
+    // Filter by keyword
+    if (filterKeyword) {
+      candidates = candidates.filter(o => o.name.includes(filterKeyword));
+    }
+    
+    // Exclude practiced
+    if (exclude) {
+      const practicedNames = new Set(practiceData.filter(r => r.times_practiced > 0).map(r => r.organism));
+      pool = candidates.filter(o => !practicedNames.has(o.name));
+    } else {
+      pool = candidates;
+    }
+    
+    if (pool.length === 0) { showInlineMsg('符合條件的題目已全部練習過！'); return; }
+    shuffle(pool);
+    currentQuiz = pool.slice(0, Math.min(count, pool.length));
+  } else if (mode === 'wrong') {
+    const count = parseInt(document.getElementById('wrong-count-input').value) || 5;
+    const wrongOrgs = practiceData.filter(r => r.is_wrong).map(r => r.organism);
+    pool = ALL_ORGANISMS.filter(o => wrongOrgs.includes(o.name));
+    shuffle(pool);
+    currentQuiz = pool.slice(0, Math.min(count, pool.length));
+  } else if (mode === 'history') {
+    if (historySelected.size === 0) { showInlineMsg('請先選擇題目！'); return; }
+    pool = ALL_ORGANISMS.filter(o => historySelected.has(o.name));
+    shuffle(pool);
+    currentQuiz = pool;
+  }
+
+  if (currentQuiz.length === 0) return;
+  showScreen('screen-quiz');
+  showQuestion();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+// ============ QUIZ LOGIC ============
+function showQuestion() {
+  const q = currentQuiz[currentIndex];
+  document.getElementById('organism-name').textContent = q.name;
+  document.getElementById('quiz-progress').textContent = `${currentIndex + 1} / ${currentQuiz.length}`;
+  document.getElementById('quiz-score').textContent = `✓${correctCount}`;
+  document.getElementById('progress-bar').style.width = `${((currentIndex) / currentQuiz.length) * 100}%`;
+  document.getElementById('result-display').classList.add('hidden');
+  document.getElementById('result-overlay').classList.add('hidden');
+  document.getElementById('quit-confirm').classList.add('hidden');
+  document.getElementById('confirm-buttons').classList.add('hidden');
+  document.getElementById('choices-container').classList.remove('hidden');
+  document.getElementById('path-chain').innerHTML = '';
+  selectedPath = [];
+
+  // Special case: 酵母菌 only needs kingdom
+  if (q.name === '酵母菌') {
+    showStep(0, getChoicesForStep(0));
+  } else {
+    showStep(0, getChoicesForStep(0));
+  }
+}
+
+function getChoicesForStep(stepIndex) {
+  // Step 0: Five Kingdoms
+  if (stepIndex === 0) return Object.keys(TAXONOMY);
+
+  // Navigate into taxonomy based on selectedPath
+  let node = TAXONOMY;
+  for (let i = 0; i < selectedPath.length; i++) {
+    node = node[selectedPath[i]];
+    if (!node) return [];
+  }
+  if (typeof node === 'object' && !Array.isArray(node)) {
+    return Object.keys(node);
+  }
+  return [];
+}
+
+const STEP_LABELS = {
+  0: '請選擇所屬的界',
+};
+
+function getStepLabel(step) {
+  if (step === 0) return '請選擇所屬的界';
+  // Contextual label
+  const last = selectedPath[selectedPath.length - 1];
+  if (['無脊索動物','脊索動物'].includes(last)) return '請選擇所屬的門/類';
+  if (['被子植物'].includes(last)) return '請選擇單子葉或雙子葉';
+  if (['軟體動物門','節肢動物門'].includes(last)) return '請選擇所屬的綱/類';
+  if (step === 1) return '請選擇所屬的分類';
+  return '請選擇下一層分類';
+}
+
+function showStep(step, choices) {
+  const container = document.getElementById('choices-container');
+  container.innerHTML = '';
+  document.getElementById('step-label').textContent = getStepLabel(step);
+
+  const colors = [
+    'from-purple-600/80 to-purple-700/80 hover:from-purple-500 hover:to-purple-600',
+    'from-indigo-600/80 to-indigo-700/80 hover:from-indigo-500 hover:to-indigo-600',
+    'from-violet-600/80 to-violet-700/80 hover:from-violet-500 hover:to-violet-600',
+    'from-fuchsia-600/80 to-fuchsia-700/80 hover:from-fuchsia-500 hover:to-fuchsia-600',
+    'from-blue-600/80 to-blue-700/80 hover:from-blue-500 hover:to-blue-600',
+  ];
+
+  choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = `btn-choice px-4 py-2.5 rounded-xl bg-gradient-to-r ${colors[i % colors.length]} font-semibold text-sm text-white fade-in`;
+    btn.textContent = c;
+    btn.onclick = () => selectChoice(c);
+    container.appendChild(btn);
+  });
+}
+
+function selectChoice(choice) {
+  if (isAnswering) return; // Prevent multiple clicks during selection
+  
+  selectedPath.push(choice);
+
+  const q = currentQuiz[currentIndex];
+
+  // Update path display
+  const chain = document.getElementById('path-chain');
+  chain.innerHTML = selectedPath.map((p, i) =>
+    `<span class="bg-purple-900/50 px-2 py-0.5 rounded-lg">${p}</span>${i < selectedPath.length - 1 ? '<span class="text-[#a78bbd]">›</span>' : ''}`
+  ).join('');
+
+  // Special: 酵母菌 only kingdom
+  if (q.name === '酵母菌' && selectedPath.length === 1) {
+    showPathAndConfirm();
+    return;
+  }
+
+  // Check if there are more levels
+  let node = TAXONOMY;
+  for (const p of selectedPath) {
+    node = node[p];
+    if (!node) break;
+  }
+
+  if (node && typeof node === 'object' && !Array.isArray(node)) {
+    // More levels
+    showStep(selectedPath.length, Object.keys(node));
+  } else {
+    // Reached leaf
+    showPathAndConfirm();
+  }
+}
+
+function showPathAndConfirm() {
+  // Disable all choice buttons
+  document.querySelectorAll('.btn-choice').forEach(btn => {
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+  });
+
+  // Show confirm buttons now
+  document.getElementById('confirm-buttons').classList.remove('hidden');
+  document.getElementById('reset-button-sticky').classList.remove('hidden');
+  const chain = document.getElementById('path-chain');
+  chain.innerHTML = selectedPath.map((p, i) =>
+    `<span class="bg-purple-900/50 px-2 py-0.5 rounded-lg">${p}</span>${i < selectedPath.length - 1 ? '<span class="text-[#a78bbd]">›</span>' : ''}`
+  ).join('');
+}
+
+function resetSelection() {
+  // Re-enable all choice buttons
+  document.querySelectorAll('.btn-choice').forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+  });
+
+  selectedPath = [];
+  document.getElementById('path-chain').innerHTML = '';
+  document.getElementById('confirm-buttons').classList.add('hidden');
+  showStep(0, getChoicesForStep(0));
+}
+
+async function confirmAnswer() {
+  if (isAnswering) return; // Prevent multiple submissions
+  isAnswering = true;
+  
+  const q = currentQuiz[currentIndex];
+  const correctPath = q.path;
+  const isCorrect = JSON.stringify(selectedPath) === JSON.stringify(correctPath);
+
+  if (isCorrect) {
+    correctCount++;
+  } else {
+    wrongThisSession.push({ name: q.name, userPath: [...selectedPath], correctPath });
+  }
+
+  // Hide choices and path selection immediately
+  document.getElementById('choices-container').classList.add('hidden');
+  document.getElementById('confirm-buttons').classList.add('hidden');
+  
+  // Show result with comparison immediately (no await)
+  document.getElementById('path-display').classList.remove('hidden');
+  const pathChain = document.getElementById('path-chain');
+  
+  const resultDisplay = document.getElementById('result-display');
+  resultDisplay.classList.remove('hidden');
+
+  const resultText = document.getElementById('result-text');
+  resultText.textContent = isCorrect ? '✅ 正確！' : '❌ 錯誤';
+  resultText.className = `text-center font-bold text-lg mb-2 ${isCorrect ? 'text-green-400' : 'text-red-400 shake'}`;
+
+  // Show user's answer
+  const userAnswerLabel = document.createElement('div');
+  userAnswerLabel.className = 'text-xs text-[#a78bbd] mb-1';
+  userAnswerLabel.textContent = '你的選擇：';
+  
+  pathChain.innerHTML = '';
+  pathChain.appendChild(userAnswerLabel);
+  const userChain = document.createElement('div');
+  userChain.className = 'flex flex-wrap items-center gap-1 text-sm font-semibold text-purple-200 mt-1';
+  userChain.innerHTML = selectedPath.map((p, i) =>
+    `<span class="bg-purple-900/50 px-2 py-0.5 rounded-lg">${p}</span>${i < selectedPath.length - 1 ? '<span class="text-[#a78bbd]">›</span>' : ''}`
+  ).join('');
+  pathChain.appendChild(userChain);
+
+  const correctBox = document.getElementById('correct-path-box');
+  if (!isCorrect) {
+    correctBox.classList.remove('hidden');
+    document.getElementById('correct-path-chain').innerHTML = correctPath.map((p, i) =>
+      `<span class="bg-green-900/40 px-2 py-0.5 rounded-lg">${p}</span>${i < correctPath.length - 1 ? '<span class="text-green-600">›</span>' : ''}`
+    ).join('');
+  } else {
+    correctBox.classList.add('hidden');
+  }
+
+  document.getElementById('quiz-score').textContent = `✓${correctCount}`;
+  
+  // Show next button in sticky area
+  const btnNext = document.getElementById('btn-next');
+  btnNext.textContent = currentIndex < currentQuiz.length - 1 ? '下一題' : '查看結果';
+  btnNext.classList.remove('hidden');
+  const resetBtn = document.querySelectorAll('[onclick="resetSelection()"]')[1];
+  if (resetBtn) resetBtn.classList.add('hidden');
+
+  // Update data
+  updateOrgRecord(q.name, isCorrect);
+  
+  isAnswering = false;
+}
+
+function updateOrgRecord(orgName, isCorrect) {
+  const existing = getRecord(orgName);
+  if (existing) {
+    existing.times_practiced = (existing.times_practiced || 0) + 1;
+    if (!isCorrect) {
+      existing.times_wrong = (existing.times_wrong || 0) + 1;
+      existing.is_wrong = true;
+    } else {
+      existing.times_wrong = existing.times_wrong || 0;
+      if (quizMode === 'wrong') existing.is_wrong = false;
+    }
+    existing.last_practiced = new Date().toISOString();
+  } else {
+    practiceData.push({
+      organism: orgName,
+      times_practiced: 1,
+      times_wrong: isCorrect ? 0 : 1,
+      is_wrong: !isCorrect,
+      last_practiced: new Date().toISOString()
+    });
+  }
+  saveData();
+  updateHomeStats();
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= currentQuiz.length) {
+    showResults();
+  } else {
+    // Reset button state for next question
+    const btnNext = document.getElementById('btn-next');
+    btnNext.classList.add('hidden');
+    const resetBtn = document.querySelectorAll('[onclick="resetSelection()"]')[1];
+    if (resetBtn) resetBtn.classList.remove('hidden');
+    
+    showQuestion();
+  }
+}
+
+function showResults() {
+  quizFinished = true;
+  showScreen('screen-result');
+  const total = currentQuiz.length;
+  const pct = Math.round((correctCount / total) * 100);
+  document.getElementById('result-emoji').textContent = pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📖';
+  document.getElementById('result-title').textContent = `${correctCount} / ${total} 正確`;
+  document.getElementById('result-summary').textContent = `正確率 ${pct}%`;
+
+  const list = document.getElementById('wrong-list-result');
+  list.innerHTML = '';
+  if (wrongThisSession.length > 0) {
+    const hdr = document.createElement('div');
+    hdr.className = 'text-sm font-semibold text-red-400 mb-1';
+    hdr.textContent = `錯題 (${wrongThisSession.length})`;
+    list.appendChild(hdr);
+    wrongThisSession.forEach(w => {
+      const item = document.createElement('div');
+      item.className = 'bg-[#1a1230] rounded-xl p-3 border border-red-900/30 fade-in';
+      item.innerHTML = `
+        <div class="font-semibold text-white text-sm">${w.name}</div>
+        <div class="text-xs text-[#a78bbd] mt-1">你的選擇：${w.userPath.join(' › ')}</div>
+        <div class="text-xs text-green-400 mt-0.5">正確答案：${w.correctPath.join(' › ')}</div>
+      `;
+      list.appendChild(item);
+    });
+  }
+  document.getElementById('progress-bar').style.width = '100%';
+}
+
+// ============ WRONG BOOK ============
+function showWrongBook() {
+  showScreen('screen-wrong');
+  const wrongOrgs = practiceData.filter(r => r.is_wrong);
+  const list = document.getElementById('wrong-book-list');
+  list.innerHTML = '';
+
+  if (wrongOrgs.length === 0) {
+    document.getElementById('wrong-empty').classList.remove('hidden');
+    document.getElementById('wrong-count-section').classList.add('hidden');
+    document.getElementById('wrong-practice-sticky').classList.add('hidden');
+    return;
+  }
+  document.getElementById('wrong-empty').classList.add('hidden');
+  document.getElementById('wrong-count-section').classList.add('hidden');
+  document.getElementById('wrong-practice-sticky').classList.remove('hidden');
+  
+  const wrongCountInputSticky = document.getElementById('wrong-count-input-sticky');
+  wrongCountInputSticky.max = wrongOrgs.length;
+  wrongCountInputSticky.value = Math.min(5, wrongOrgs.length);
+  document.getElementById('wrong-max-sticky').textContent = wrongOrgs.length;
+  updateWrongStickyCount();
+
+  wrongOrgs.forEach(r => {
+    const org = ALL_ORGANISMS.find(o => o.name === r.organism);
+    if (!org) return;
+    const item = document.createElement('div');
+    item.className = 'bg-[#1a1230] rounded-xl p-3 border border-red-900/30 fade-in';
+    item.innerHTML = `
+      <div class="flex justify-between items-center">
+        <span class="font-semibold text-white text-sm">${r.organism}</span>
+        <span class="text-xs text-[#a78bbd]">錯 ${r.times_wrong} 次</span>
+      </div>
+      <div class="text-xs text-green-400/70 mt-1">${org.path.join(' › ')}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function updateWrongStickyCount() {
+  const count = parseInt(document.getElementById('wrong-count-input-sticky').value) || 5;
+  document.getElementById('wrong-sticky-count').textContent = `(${count})`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const wrongInput = document.getElementById('wrong-count-input-sticky');
+  if (wrongInput) {
+    wrongInput.addEventListener('change', updateWrongStickyCount);
+    wrongInput.addEventListener('input', updateWrongStickyCount);
+  }
+  // Initialize home screen on load
+  updateHomeStats();
+});
+
+// ============ HISTORY ============
+function showHistory() {
+  showScreen('screen-history');
+  historySelected.clear();
+  const practiced = practiceData.filter(r => r.times_practiced > 0);
+  practiced.sort((a, b) => {
+    const rateA = a.times_practiced > 0 ? ((a.times_practiced - a.times_wrong) / a.times_practiced) : 0;
+    const rateB = b.times_practiced > 0 ? ((b.times_practiced - b.times_wrong) / b.times_practiced) : 0;
+    return rateA - rateB;
+  });
+
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+
+  if (practiced.length === 0) {
+    document.getElementById('history-empty').classList.remove('hidden');
+    document.getElementById('history-practice-sticky').classList.add('hidden');
+    return;
+  }
+  document.getElementById('history-empty').classList.add('hidden');
+  document.getElementById('history-practice-sticky').classList.remove('hidden');
+
+  practiced.forEach(r => {
+    const rate = r.times_practiced > 0 ? Math.round(((r.times_practiced - r.times_wrong) / r.times_practiced) * 100) : 0;
+    const rateColor = rate >= 80 ? 'text-green-400' : rate >= 50 ? 'text-yellow-400' : 'text-red-400';
+    const item = document.createElement('div');
+    item.className = 'bg-[#1a1230] rounded-xl p-3 border border-purple-900/30 fade-in flex items-center gap-3 cursor-pointer hover:bg-[#1e1538] transition-colors';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'accent-purple-500 w-4 h-4 rounded shrink-0 hist-check';
+    checkbox.dataset.org = r.organism;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'flex-1 min-w-0';
+    contentDiv.innerHTML = `
+      <div class="font-semibold text-white text-sm truncate">${r.organism}</div>
+      <div class="text-xs text-[#a78bbd]">練 ${r.times_practiced} 次 · 錯 ${r.times_wrong} 次</div>
+    `;
+    
+    const rateSpan = document.createElement('span');
+    rateSpan.className = `text-sm font-bold ${rateColor} shrink-0`;
+    rateSpan.textContent = `${rate}%`;
+    
+    item.appendChild(checkbox);
+    item.appendChild(contentDiv);
+    item.appendChild(rateSpan);
+    
+    const toggleCheckbox = () => {
+      checkbox.checked = !checkbox.checked;
+      if (checkbox.checked) historySelected.add(r.organism);
+      else historySelected.delete(r.organism);
+      updateHistoryStickyCount();
+    };
+    
+    item.addEventListener('click', toggleCheckbox);
+    checkbox.addEventListener('click', (e) => e.stopPropagation());
+    
+    list.appendChild(item);
+  });
+}
+
+function updateHistoryStickyCount() {
+  const count = historySelected.size;
+  document.getElementById('history-sticky-count').textContent = `(${count})`;
+}
+
+function applyHistoryFilter() {
+  const rateInput = document.getElementById('history-filter-rate').value;
+  const timesInput = document.getElementById('history-filter-times').value;
+  const rateLimit = rateInput ? parseInt(rateInput) : null;
+  const timesLimit = timesInput ? parseInt(timesInput) : null;
+
+  historySelected.clear();
+  const checkboxes = document.querySelectorAll('.hist-check');
+  
+  checkboxes.forEach(cb => {
+    const orgName = cb.dataset.org;
+    const record = practiceData.find(r => r.organism === orgName);
+    if (!record) return;
+
+    const rate = record.times_practiced > 0 ? ((record.times_practiced - record.times_wrong) / record.times_practiced) * 100 : 0;
+    const passesRateFilter = rateLimit === null || rate < rateLimit;
+    const passesTimesFilter = timesLimit === null || record.times_practiced <= timesLimit;
+
+    if (passesRateFilter && passesTimesFilter) {
+      historySelected.add(orgName);
+      cb.checked = true;
+    } else {
+      cb.checked = false;
+    }
+  });
+
+  updateHistoryStickyCount();
+}
+
+function historySelectAll() {
+  historySelected.clear();
+  document.querySelectorAll('.hist-check').forEach(cb => {
+    cb.checked = true;
+    historySelected.add(cb.dataset.org);
+  });
+  updateHistoryStickyCount();
+}
+
+function historyClearAll() {
+  historySelected.clear();
+  document.querySelectorAll('.hist-check').forEach(cb => {
+    cb.checked = false;
+  });
+  updateHistoryStickyCount();
+}
+
+function clearAllData() {
+  if (confirm('確定要刪除所有練習紀錄嗎？這將會清除錯題本與練習次數，且無法恢復。')) {
+    practiceData = [];
+    saveData();
+    updateHomeStats();
+    showHistory();
+  }
+}
+
+// ============ QUIT CONFIRM ============
+function confirmQuit() {
+  document.getElementById('quit-confirm').classList.remove('hidden');
+}
+function cancelQuit() {
+  document.getElementById('quit-confirm').classList.add('hidden');
+}
+
+// ============ INLINE MSG ============
+function showInlineMsg(msg) {
+  const el = document.getElementById('remaining-count');
+  el.textContent = msg;
+  el.classList.add('text-yellow-400');
+  setTimeout(() => { el.classList.remove('text-yellow-400'); updateHomeStats(); }, 2000);
+}
+
+// ============ ELEMENT SDK ============
+const defaultConfig = {
+  app_title: '生物分類配對練習',
+  background_color: '#0f0a1e',
+  surface_color: '#1a1230',
+  text_color: '#e8e0f0',
+  accent_color: '#7c3aed',
+  secondary_color: '#a78bbd',
+  font_family: 'Noto Sans TC',
+  font_size: 16
+};
+
+window.elementSdk.init({
+  defaultConfig,
+  async onConfigChange(config) {
+    const t = config.app_title || defaultConfig.app_title;
+    const bg = config.background_color || defaultConfig.background_color;
+    const sf = config.surface_color || defaultConfig.surface_color;
+    const tx = config.text_color || defaultConfig.text_color;
+    const ac = config.accent_color || defaultConfig.accent_color;
+    const sc = config.secondary_color || defaultConfig.secondary_color;
+    const ff = config.font_family || defaultConfig.font_family;
+    const fs = config.font_size || defaultConfig.font_size;
+
+    document.getElementById('main-title').textContent = t;
+    document.body.style.backgroundColor = bg;
+    document.body.style.color = tx;
+    document.body.style.fontFamily = `${ff}, sans-serif`;
+    document.body.style.fontSize = `${fs}px`;
+
+    document.querySelectorAll('.bg-\\[\\#1a1230\\]').forEach(el => el.style.backgroundColor = sf);
+  },
+  mapToCapabilities(config) {
+    const mk = (key) => ({
+      get: () => config[key] || defaultConfig[key],
+      set: (v) => { config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+    });
+    return {
+      recolorables: [mk('background_color'), mk('surface_color'), mk('text_color'), mk('accent_color'), mk('secondary_color')],
+      borderables: [],
+      fontEditable: mk('font_family'),
+      fontSizeable: mk('font_size')
+    };
+  },
+  mapToEditPanelValues(config) {
+    return new Map([['app_title', config.app_title || defaultConfig.app_title]]);
+  }
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>
