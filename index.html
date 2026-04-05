@@ -50,9 +50,11 @@ html, body { height: 100%; margin: 0; }
         </div>
         <div>
          <label class="text-xs text-[#a78bbd] block mb-2">包含名字關鍵字：</label>
-         <div class="flex gap-2">
-          <input id="filter-keyword" type="text" placeholder="輸入關鍵字" oninput="updateFilterCount()" class="flex-1 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 text-white"> <button onclick="quickAddKeyword('菌')" class="px-2 py-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-xs text-purple-300">菌</button> <button onclick="quickAddKeyword('藻')" class="px-2 py-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-xs text-purple-300">藻</button>
-         </div>
+	<div class="flex gap-2 items-center">
+  	<input id="filter-keyword" type="text" placeholder="輸入關鍵字" oninput="updateFilterCount()" class="min-w-0 flex-1 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-purple-500 text-white"> 
+ 	 <button onclick="quickAddKeyword('菌')" class="shrink-0 px-3 py-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-xs text-purple-300">菌	</button> 
+  	<button onclick="quickAddKeyword('藻')" class="shrink-0 px-3 py-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-xs text-purple-300">藻	</button>
+	</div>
         </div>
        </div><button onclick="startPractice('new')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-sm hover:from-purple-500 hover:to-indigo-500 transition-all"> 開始練習 </button>
       </div><div class="grid grid-cols-2 gap-3">
