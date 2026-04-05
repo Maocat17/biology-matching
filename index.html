@@ -82,7 +82,7 @@ html, body { height: 100%; margin: 0; }
     </div>
    </div><div id="screen-quiz" class="hidden flex-1 overflow-auto flex flex-col items-center p-6">
     <div class="w-full max-w-lg flex-1 fade-in">
-     <div class="flex items-center justify-between mb-4"><button onclick="confirmQuit()" class="text-[#a78bbd] hover:text-white text-sm flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i>返回</button> <span id="quiz-progress" class="text-sm text-purple-300 font-semibold"></span> <span id="quiz-score" class="text-sm text-[#a78bbd]"></span>
+     <div class="relative flex items-center justify-between mb-4"><button onclick="confirmQuit()" class="text-[#a78bbd] hover:text-white text-sm flex items-center gap-1"><i data-lucide="arrow-left" class="w-4 h-4"></i>返回</button> <span id="quiz-progress" class="absolute left-1/2 -translate-x-1/2 text-sm text-purple-300 font-semibold"></span> <span id="quiz-score" class="text-sm text-[#a78bbd]"></span>
      </div><div class="w-full h-1.5 bg-[#1a1230] rounded-full mb-6 overflow-hidden">
       <div id="progress-bar" class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-300" style="width:0%"></div>
      </div>
@@ -185,7 +185,7 @@ html, body { height: 100%; margin: 0; }
         篩選條件
        </div>
        <div class="flex gap-2 text-xs">
-        <input id="history-filter-rate" type="number" min="0" max="100" placeholder="答對率低於 %" class="w-28 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> <input id="history-filter-times" type="number" min="1" placeholder="練習次數≤" class="w-24 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> <button onclick="applyHistoryFilter()" class="flex-1 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-purple-300 font-semibold">應用</button>
+        <input id="history-filter-rate" type="number" min="0" max="100" placeholder="答對率低於 %" class="w-40 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> <input id="history-filter-times" type="number" min="1" placeholder="練習次數≤" class="w-40 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> <button onclick="applyHistoryFilter()" class="flex-1 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-purple-300 font-semibold">應用</button>
        </div>
        <div class="flex gap-2 text-xs">
         <button onclick="historySelectAll()" class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">全選</button> <button onclick="historyClearAll()" class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">取消全選</button>
