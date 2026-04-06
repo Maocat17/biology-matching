@@ -418,7 +418,7 @@ function startPractice(mode) {
     shuffle(pool);
     currentQuiz = pool.slice(0, Math.min(count, pool.length));
   } else if (mode === 'wrong') {
-    const count = parseInt(document.getElementById('wrong-count-input').value) || 5;
+    const count = parseInt(document.getElementById('wrong-count-input-sticky').value) || 5;
     const wrongOrgs = practiceData.filter(r => r.is_wrong).map(r => r.organism);
     pool = ALL_ORGANISMS.filter(o => wrongOrgs.includes(o.name));
     shuffle(pool);
