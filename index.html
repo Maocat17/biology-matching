@@ -34,7 +34,7 @@ html, body { height: 100%; margin: 0; }
   border-bottom: 1px solid #6b21a8;
   padding: 16px 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  
+
   /* 新增：與內容卡片一樣置中、最大寬度一致 */
   max-width: 512px;           /* max-w-lg = 32rem = 512px */
   margin-left: auto;
@@ -45,7 +45,7 @@ html, body { height: 100%; margin: 0; }
 .screen-header h2 {
   margin: 0;
 }
-                            
+
 /* === 強制讓 Lucide 返回箭頭清晰顯示 === */
 i[data-lucide="arrow-left"] {
   stroke: #ffffff !important;     /* 強制白色 */
@@ -58,7 +58,7 @@ i[data-lucide="arrow-left"] {
 button:hover i[data-lucide="arrow-left"] {
   stroke: #c4b5fd !important;     /* 懸停時變成亮紫色 */
 }
-                                                        
+
 </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
@@ -198,10 +198,18 @@ button:hover i[data-lucide="arrow-left"] {
       </div>
     </div>
 
-    <div id="wrong-practice-sticky" class="hidden w-full bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
+    <div id="wrong-practice-sticky" class="hidden w-full max-w-lg mx-auto bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
       <div class="w-full max-w-lg space-y-2">
-        <div class="flex items-center gap-3"><label class="text-sm text-[#a78bbd]">題數：</label> <input id="wrong-count-input-sticky" type="number" min="1" value="5" class="w-20 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-center text-sm focus:outline-none focus:border-purple-500"> <span class="text-xs text-[#a78bbd]">/ <span id="wrong-max-sticky">0</span></span>
-        </div><button onclick="startPractice('wrong')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 font-semibold text-sm hover:from-red-500 hover:to-pink-500 transition-all">開始錯題練習 <span id="wrong-sticky-count">(5)</span></button>
+        <div class="flex items-center gap-3">
+          <label class="text-sm text-[#a78bbd]">題數：</label> 
+          <input id="wrong-count-input-sticky" type="number" min="1" value="5" 
+                class="w-20 bg-[#0f0a1e] border border-purple-800/50 rounded-lg px-3 py-1.5 text-center text-sm focus:outline-none focus:border-purple-500"> 
+          <span class="text-xs text-[#a78bbd]">/ <span id="wrong-max-sticky">0</span></span>
+        </div>
+        <button onclick="startPractice('wrong')" 
+                class="w-full py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 font-semibold text-sm hover:from-red-500 hover:to-pink-500 transition-all">
+          開始錯題練習 <span id="wrong-sticky-count">(5)</span>
+        </button>
       </div>
     </div>
   </div>
@@ -227,22 +235,30 @@ button:hover i[data-lucide="arrow-left"] {
       </div>
     </div>
 
-    <div id="history-practice-sticky" class="hidden w-full bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
+    <div id="history-practice-sticky" class="hidden w-full max-w-lg mx-auto bg-[#0f0a1e] border-t border-purple-900/40 p-4 flex justify-center shrink-0">
       <div class="w-full max-w-lg space-y-3">
         <!-- 篩選區塊保持不變 -->
-        <div class="space-y-2 pb-3 border-b border-purple-900/30">
+        <div class="space-y-2 border-b border-purple-900/30">
           <div class="text-xs text-purple-400 font-semibold mb-2">篩選條件</div>
           <div class="flex gap-2 text-xs">
-            <input id="history-filter-rate" type="number" min="0" max="100" placeholder="答對率低於 %" class="w-40 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> 
-            <input id="history-filter-times" type="number" min="1" placeholder="練習次數≤" class="w-40 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> 
-            <button onclick="applyHistoryFilter()" class="flex-1 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-purple-300 font-semibold">應用</button>
+            <input id="history-filter-rate" type="number" min="0" max="100" placeholder="答對率低於 %" 
+                  class="w-40 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> 
+            <input id="history-filter-times" type="number" min="1" placeholder="練習次數≤" 
+                  class="w-40 bg-[#1a1230] border border-purple-800/50 rounded-lg px-2 py-1 text-center focus:outline-none focus:border-purple-500 text-white"> 
+            <button onclick="applyHistoryFilter()" 
+                    class="flex-1 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-900/60 text-purple-300 font-semibold">應用</button>
           </div>
           <div class="flex gap-2 text-xs">
-            <button onclick="historySelectAll()" class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">全選</button> 
-            <button onclick="historyClearAll()" class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">取消全選</button>
+            <button onclick="historySelectAll()" 
+                    class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">全選</button> 
+            <button onclick="historyClearAll()" 
+                    class="flex-1 py-1 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300">取消全選</button>
           </div>
         </div>
-        <button onclick="startPractice('history')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-sm hover:from-purple-500 hover:to-indigo-500 transition-all">練習選取的題目 <span id="history-sticky-count">(0)</span></button>
+        <button onclick="startPractice('history')" 
+                class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-sm hover:from-purple-500 hover:to-indigo-500 transition-all">
+          練習選取的題目 <span id="history-sticky-count">(0)</span>
+        </button>
       </div>
     </div>
   </div>
@@ -360,10 +376,10 @@ let selectedPath = [];
 let quizMode = ''; // 'new', 'wrong', 'history'
 let historySelected = new Set();
 let quizFinished = false;
-let currentExamName = '';                            
-let isAnswering = false; // Prevent multiple submissions                     
-    
-  
+let currentExamName = '';
+let isAnswering = false; // Prevent multiple submissions
+
+
 // ============ 考卷資料（可自行新增） ============
   const EXAM_PAPERS = {
   "【俊卷-第一大題】原核～真菌": ["青黴菌", "草履蟲", "大腸桿菌", "竹蓀", "顫藻", "酵母菌", "乳酸菌", "黏菌", "木耳", "黑黴菌", "藍菌", "石蓴", "眼蟲", "水黴菌", "昆布", "變形蟲", "牛樟芝", "黃麴菌", "水綿", "冬蟲夏草", "新月藻", "根瘤菌", "梅毒螺旋體", "紅托鵝膏", "紫菜", "髮菜(髮狀念珠藻)", "石花菜", "肺炎鏈球菌"],
@@ -371,7 +387,7 @@ let isAnswering = false; // Prevent multiple submissions
   "【俊卷-第三大題】植物界": ["箭竹", "仙人掌", "台灣水韭", "地錢", "二葉松", "捕蠅草", "蘇鐵", "山蘇", "台灣杉", "土馬騌", "紅檜", "銀杏", "筆筒樹", "龍柏", "水筆仔"],
   "【俊卷-第四大題】動物界": ["扇貝", "海膽", "龍蝦", "水螅", "珊瑚", "絛蟲", "蝸牛", "企鵝", "塵蟎", "文蛤", "糞金龜", "斑龜", "無尾熊", "魟魚", "南蛇", "烏賊", "蜘蛛", "海葵", "渦蟲", "毛蟹", "海星", "鴨嘴獸", "衣魚", "鯨魚", "鯊魚", "山椒魚", "海兔", "海馬", "海牛", "海豚", "水母", "壁虎", "鱷魚", "馬陸", "針鼴", "袋鼠", "變色龍", "蚯蚓", "水蛭", "蝙蝠", "海參", "彈塗魚", "穿山甲", "牡蠣", "吸蟲", "蜈蚣", "福壽螺", "蠑螈"],
   "【俊卷】錯題": ["水螅", "壁虎", "鉤端螺旋菌", "冬蟲夏草", "銀杏"],
-  
+
 };
 
 // ============ LOCALSTORAGE ============
@@ -413,7 +429,7 @@ function updateHomeStats() {
   if (el('progress-text')) el('progress-text').textContent = `共 ${ALL_ORGANISMS.length} 種生物 · 已練習 ${practiced.length} 題`;
   if (el('remaining-count')) el('remaining-count').textContent = `剩餘 ${remaining} 題未練`;
   if (el('wrong-count-label')) el('wrong-count-label').textContent = `${wrongOnes.length} 題`;
-  
+
   // 練習紀錄顯示總練習次數（無上限）
   if (el('history-count-label')) el('history-count-label').textContent = `${totalAttempts} 題已練`;
 
@@ -521,20 +537,20 @@ function startPractice(mode) {
     if (pool.length === 0) { showInlineMsg('符合條件的題目已全部練習過！'); return; }
     shuffle(pool);
     currentQuiz = pool.slice(0, Math.min(count, pool.length));
-  } 
+  }
   else if (mode === 'wrong') {
     const count = parseInt(document.getElementById('wrong-count-input-sticky').value) || 5;
-    
+
     // 【修正重點】只取出「尚未複習完成」的錯題
     const unreviewedWrong = practiceData
       .filter(r => r.is_wrong === true && r.reviewed !== true)
       .map(r => r.organism);
-    
+
     pool = ALL_ORGANISMS.filter(o => unreviewedWrong.includes(o.name));
-    
+
     shuffle(pool);
     currentQuiz = pool.slice(0, Math.min(count, pool.length));
-  } 
+  }
   else if (mode === 'history') {
     if (historySelected.size === 0) { showInlineMsg('請先選擇題目！'); return; }
     pool = ALL_ORGANISMS.filter(o => historySelected.has(o.name));
